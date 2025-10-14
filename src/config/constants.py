@@ -15,6 +15,7 @@ class ReasoningMode(Enum):
     REFLEXION = "Reflexion + Self-Correction"
     DEBATE = "Multi-Agent Debate"
     ANALOGICAL = "Analogical Reasoning"
+    SIMPLE = "Simple (Direct Response)"
     
     def __str__(self) -> str:
         return self.value
@@ -28,7 +29,8 @@ class ReasoningMode(Enum):
             cls.SELF_CONSISTENCY: "Generates multiple independent solutions and identifies the most consistent answer.",
             cls.REFLEXION: "Solves problems, critiques reasoning, and refines solutions iteratively.",
             cls.DEBATE: "Presents multiple perspectives and synthesizes the strongest arguments.",
-            cls.ANALOGICAL: "Finds similar problems and applies their solutions to the current problem."
+            cls.ANALOGICAL: "Finds similar problems and applies their solutions to the current problem.",
+            cls.SIMPLE: "Direct response without structured reasoning - fastest and most natural."
         }
         return descriptions.get(mode, "Advanced reasoning mode")
 

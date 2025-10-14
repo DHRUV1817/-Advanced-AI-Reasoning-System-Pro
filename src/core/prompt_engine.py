@@ -78,7 +78,9 @@ Show multiple viewpoints and reasoned synthesis.""",
 4. Adapt to current problem context
 5. Verify applicability
 
-Draw meaningful analogies and explain transfer logic."""
+Draw meaningful analogies and explain transfer logic.""",
+
+        ReasoningMode.SIMPLE: """You are a helpful AI assistant. Provide clear, direct, and accurate responses to user queries."""
     }
     
     # Pre-built templates for common tasks
@@ -149,7 +151,11 @@ Include:
 2. Core principles
 3. Examples and analogies
 4. Common misconceptions
-5. Practical applications"""
+5. Practical applications""",
+
+        "Simple": """Answer the following question directly:
+
+{query}"""
     }
     
     @classmethod
@@ -157,7 +163,7 @@ Include:
         """
         ✅ GET SYSTEM PROMPT FOR REASONING MODE
         """
-        prompt = cls.SYSTEM_PROMPTS.get(mode, cls.SYSTEM_PROMPTS[ReasoningMode.CHAIN_OF_THOUGHT])
+        prompt = cls.SYSTEM_PROMPTS.get(mode, cls.SYSTEM_PROMPTS[ReasoningMode.SIMPLE])
         logger.debug(f"📝 Retrieved system prompt for mode: {mode}")
         return prompt
     
