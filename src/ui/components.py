@@ -16,19 +16,33 @@ class UIComponents:
     @staticmethod
     def get_header_html() -> str:
         """
-        📋 GENERATE HEADER HTML
+        📋 GENERATE ENHANCED HEADER HTML
         """
         return """
         <div class="research-header">
-            <h1>🧠 Advanced AI Reasoning System Pro</h1>
-            <p><strong>Research-Backed Implementation:</strong> Tree of Thoughts + Constitutional AI + Multi-Agent Validation + Performance Optimization</p>
-            <div style="margin-top: 1rem;">
-                <span class="badge">🌳 Yao et al. 2023 - Tree of Thoughts</span>
-                <span class="badge">🛡️ Bai et al. 2022 - Constitutional AI</span>
-                <span class="badge">🔬 6 Advanced Reasoning Modes</span>
-                <span class="badge">⚡ Cache + Rate Limiting</span>
-                <span class="badge">🎛️ Collapsible Sidebar</span>
-                <span class="badge">📊 Real-Time Analytics</span>
+            <div class="header-branding">
+                <div class="logo-section">
+                    <div class="logo-circle">🧠</div>
+                    <div class="brand-text">
+                        <h1>Advanced AI Reasoning System Pro</h1>
+                        <span class="brand-tagline">Next-Generation AI Research Platform</span>
+                    </div>
+                </div>
+                <div class="status-indicator">
+                    <span class="status-dot"></span>
+                    <span class="status-text">System Active</span>
+                </div>
+            </div>
+            <div class="header-subtitle">
+                <p><strong>🚀 Research-Backed Implementation:</strong> Tree of Thoughts + Constitutional AI + Multi-Agent Validation + Performance Optimization</p>
+            </div>
+            <div class="feature-badges">
+                <span class="badge feature-badge">🌳 Tree of Thoughts (Yao '23)</span>
+                <span class="badge feature-badge">🛡️ Constitutional AI (Bai '22)</span>
+                <span class="badge feature-badge">🔬 6 Reasoning Modes</span>
+                <span class="badge feature-badge">⚡ Smart Caching + Rate Limiting</span>
+                <span class="badge feature-badge">🎛️ Dynamic Configuration</span>
+                <span class="badge feature-badge">📊 Real-Time Analytics</span>
             </div>
         </div>
         """
@@ -64,12 +78,47 @@ class UIComponents:
     @staticmethod
     def get_empty_analytics_html() -> str:
         """
-        📊 GENERATE EMPTY ANALYTICS HTML
+        📊 GENERATE ENHANCED EMPTY ANALYTICS HTML
         """
-        return """<div class="analytics-panel">
-        <h3>📊 No Analytics Data Yet</h3>
-        <p>Start a conversation to see detailed analytics and insights!</p>
-        <p style="margin-top: 1rem; font-size: 0.9em;">Metrics tracked: tokens, speed, reasoning depth, confidence scores, and more.</p>
+        return """
+        <div class="analytics-panel-welcome">
+            <div class="analytics-header">
+                <div class="analytics-icon">📊</div>
+                <div class="analytics-text">
+                    <h3>Analytics Dashboard</h3>
+                    <p class="analytics-subtitle">Performance insights & conversation metrics</p>
+                </div>
+            </div>
+
+            <div class="analytics-placeholder">
+                <div class="placeholder-icon">🚀</div>
+                <h4>No Data Available Yet</h4>
+                <p>Start a conversation to begin collecting detailed performance analytics and usage insights.</p>
+
+                <div class="metrics-preview">
+                    <div class="metric-item">
+                        <span class="metric-emoji">⚡</span>
+                        <span class="metric-label">Inference Speed</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-emoji">🧠</span>
+                        <span class="metric-label">Reasoning Depth</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-emoji">✨</span>
+                        <span class="metric-label">Confidence Score</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-emoji">💾</span>
+                        <span class="metric-label">Cache Performance</span>
+                    </div>
+                </div>
+
+                <div class="get-started">
+                    <div class="arrow-icon">👆</div>
+                    <span>Navigate to the "Reasoning Workspace" tab to get started!</span>
+                </div>
+            </div>
         </div>"""
     
     @staticmethod
