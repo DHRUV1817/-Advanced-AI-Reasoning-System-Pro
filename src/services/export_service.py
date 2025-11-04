@@ -102,85 +102,236 @@ class ConversationExporter:
         return "\n".join(lines)
     
     def export_to_pdf(self, conversations: List[ConversationEntry],
-                     include_metadata: bool = True) -> Optional[str]:
+                     include_metadata: bool = True,
+                     title: str = "Conversation Export",
+                     subtitle: Optional[str] = None,
+                     author: Optional[str] = None) -> Optional[str]:
         """
-        📄 EXPORT TO PDF (Premium Feature)
-        Returns string path for Gradio compatibility
+        📄 EXPORT TO PDF — Premium design with proper page breaking
+
+        Returns the string path for compatibility with Gradio (or None on error).
         """
         if not AppConfig.ENABLE_PDF_EXPORT:
             logger.warning("⚠️ PDF export is disabled")
             return None
-        
+
         try:
             from reportlab.lib.pagesizes import letter
             from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
             from reportlab.lib.units import inch
-            from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak
+            from reportlab.platypus import (
+                SimpleDocTemplate,
+                Paragraph,
+                Spacer,
+                PageBreak,
+            )
+            from reportlab.lib import colors
             from reportlab.lib.enums import TA_LEFT, TA_CENTER
+            from reportlab.pdfbase import pdfmetrics
+            from reportlab.pdfbase.ttfonts import TTFont
         except ImportError:
             logger.error("❌ reportlab not installed. Install with: pip install reportlab")
             return None
-        
+
+        def _escape_for_paragraph(text: Optional[str]) -> str:
+            """Safely escape text for reportlab Paragraph"""
+            if text is None:
+                return ""
+            s = str(text)
+            s = s.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+            s = s.replace('\n', '<br/>')
+            return s
+
+        try:
+            default_font = 'Helvetica'
+            default_bold = 'Helvetica-Bold'
+        except Exception:
+            default_font = 'Helvetica'
+            default_bold = 'Helvetica-Bold'
+
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         filename = self.export_dir / f"conversation_export_{timestamp}.pdf"
-        
-        doc = SimpleDocTemplate(str(filename), pagesize=letter)
-        styles = getSampleStyleSheet()
-        
-        # Custom styles
-        title_style = ParagraphStyle(
-            'CustomTitle',
-            parent=styles['Heading1'],
-            fontSize=24,
-            textColor='#667eea',
-            alignment=TA_CENTER,
-            spaceAfter=30
+
+        doc = SimpleDocTemplate(
+            str(filename),
+            pagesize=letter,
+            leftMargin=0.7 * inch,
+            rightMargin=0.7 * inch,
+            topMargin=1.0 * inch,
+            bottomMargin=0.8 * inch,
         )
-        
+
+        base_styles = getSampleStyleSheet()
+
+        # Define all styles
+        title_style = ParagraphStyle(
+            'TitlePremium',
+            parent=base_styles['Heading1'],
+            fontName=default_bold,
+            fontSize=26,
+            leading=30,
+            alignment=TA_CENTER,
+            textColor=colors.HexColor('#0f172a'),
+            spaceAfter=12,
+        )
+
+        subtitle_style = ParagraphStyle(
+            'SubtitlePremium',
+            parent=base_styles['Normal'],
+            fontName=default_font,
+            fontSize=11,
+            leading=14,
+            alignment=TA_CENTER,
+            textColor=colors.HexColor('#475569'),
+            spaceAfter=18,
+        )
+
+        conv_header_style = ParagraphStyle(
+            'ConvHeader',
+            parent=base_styles['Heading2'],
+            fontName=default_bold,
+            fontSize=12,
+            leading=14,
+            textColor=colors.HexColor('#0f172a'),
+            spaceAfter=6,
+        )
+
+        body_style = ParagraphStyle(
+            'BodyText',
+            parent=base_styles['Normal'],
+            fontName=default_font,
+            fontSize=10.5,
+            leading=14,
+            alignment=TA_LEFT,
+            textColor=colors.HexColor('#0f172a'),
+        )
+
+        small_italic = ParagraphStyle(
+            'SmallItalic',
+            parent=base_styles['Normal'],
+            fontName=default_font,
+            fontSize=9,
+            leading=11,
+            textColor=colors.HexColor('#6b7280'),
+        )
+
+        # Styles for user and assistant content with backgrounds
+        user_content_style = ParagraphStyle(
+            'UserContent',
+            parent=body_style,
+            backColor=colors.HexColor('#f1f5f9'),
+            borderColor=colors.HexColor('#e2e8f0'),
+            borderWidth=0.5,
+            borderPadding=8,
+            leftIndent=8,
+            rightIndent=8,
+            spaceBefore=4,
+            spaceAfter=4,
+        )
+
+        assistant_content_style = ParagraphStyle(
+            'AssistantContent',
+            parent=body_style,
+            backColor=colors.HexColor('#eef2ff'),
+            borderColor=colors.HexColor('#e2e8f0'),
+            borderWidth=0.5,
+            borderPadding=8,
+            leftIndent=8,
+            rightIndent=8,
+            spaceBefore=4,
+            spaceAfter=4,
+        )
+
+        border_color = colors.HexColor('#e2e8f0')
+
+        def _draw_header(canvas_obj, doc_obj):
+            canvas_obj.saveState()
+            width, height = doc_obj.pagesize
+            header_height = 0.65 * inch
+            canvas_obj.setFillColor(colors.HexColor('#4f46e5'))
+            canvas_obj.rect(0, height - header_height, width, header_height, stroke=0, fill=1)
+            canvas_obj.setFillColor(colors.white)
+            canvas_obj.setFont(default_bold, 14)
+            canvas_obj.drawString(doc_obj.leftMargin, height - 0.45 * inch, title)
+            canvas_obj.setFont(default_font, 8)
+            right_meta = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            text_width = canvas_obj.stringWidth(right_meta, default_font, 8)
+            canvas_obj.drawString(width - doc_obj.rightMargin - text_width, height - 0.45 * inch, right_meta)
+            canvas_obj.restoreState()
+
+        def _draw_footer(canvas_obj, doc_obj):
+            canvas_obj.saveState()
+            width, _ = doc_obj.pagesize
+            footer_y = 0.5 * inch
+            canvas_obj.setStrokeColor(border_color)
+            canvas_obj.setLineWidth(0.5)
+            canvas_obj.line(doc_obj.leftMargin, footer_y + 6, width - doc_obj.rightMargin, footer_y + 6)
+            page_num_text = f"Page {canvas_obj.getPageNumber()}"
+            canvas_obj.setFont(default_font, 9)
+            canvas_obj.setFillColor(colors.HexColor('#6b7280'))
+            canvas_obj.drawString(doc_obj.leftMargin, footer_y - 2, page_num_text)
+            brand = author if author else 'Generated by Advanced AI Reasoning System Pro'
+            brand_width = canvas_obj.stringWidth(brand, default_font, 9)
+            canvas_obj.drawString(width - doc_obj.rightMargin - brand_width, footer_y - 2, brand)
+            canvas_obj.restoreState()
+
+        def _draw_page(canvas_obj, doc_obj):
+            _draw_header(canvas_obj, doc_obj)
+            _draw_footer(canvas_obj, doc_obj)
+
         story = []
+
+        # Cover
+        story.append(Spacer(1, 0.2 * inch))
+        story.append(Paragraph(_escape_for_paragraph(title), title_style))
+        if subtitle:
+            story.append(Paragraph(_escape_for_paragraph(subtitle), subtitle_style))
         
-        # Title
-        story.append(Paragraph("Conversation Export", title_style))
-        story.append(Paragraph(
-            f"<b>Export Date:</b> {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
-            styles['Normal']
-        ))
-        story.append(Paragraph(
-            f"<b>Total Conversations:</b> {len(conversations)}",
-            styles['Normal']
-        ))
-        story.append(Spacer(1, 0.3*inch))
-        
-        # Conversations
+        meta_lines = []
+        meta_lines.append(f"<b>Export Date:</b> {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        meta_lines.append(f"<b>Total Conversations:</b> {len(conversations)}")
+        if author:
+            meta_lines.append(f"<b>Author:</b> {author}")
+        story.append(Paragraph(' | '.join(meta_lines), small_italic))
+        story.append(Spacer(1, 0.25 * inch))
+
+        # Process each conversation
         for idx, conv in enumerate(conversations, 1):
-            story.append(Paragraph(f"<b>Conversation {idx}</b>", styles['Heading2']))
-            
+            # Conversation header
+            conv_title = f"Conversation {idx}"
+            story.append(Paragraph(_escape_for_paragraph(conv_title), conv_header_style))
+
             if include_metadata:
                 meta_text = (
-                    f"<b>Timestamp:</b> {conv.timestamp} | "
-                    f"<b>Model:</b> {conv.model} | "
-                    f"<b>Mode:</b> {conv.reasoning_mode}<br/>"
-                    f"<b>Tokens:</b> {conv.tokens_used} | "
-                    f"<b>Time:</b> {conv.inference_time:.2f}s"
+                    f"<b>Timestamp:</b> {conv.timestamp}   &nbsp;|&nbsp;  "
+                    f"<b>Model:</b> {conv.model}   &nbsp;|&nbsp;  "
+                    f"<b>Mode:</b> {conv.reasoning_mode}   &nbsp;|&nbsp;  "
+                    f"<b>Tokens:</b> {getattr(conv, 'tokens_used', 'N/A')}   &nbsp;|&nbsp;  "
+                    f"<b>Time:</b> {getattr(conv, 'inference_time', 0):.2f}s"
                 )
-                story.append(Paragraph(meta_text, styles['Normal']))
-                story.append(Spacer(1, 0.1*inch))
-            
-            story.append(Paragraph("<b>👤 User:</b>", styles['Heading3']))
-            story.append(Paragraph(conv.user_message.replace('\n', '<br/>'), styles['Normal']))
-            story.append(Spacer(1, 0.1*inch))
-            
-            story.append(Paragraph("<b>🤖 Assistant:</b>", styles['Heading3']))
-            story.append(Paragraph(conv.assistant_response.replace('\n', '<br/>'), styles['Normal']))
-            
+                story.append(Paragraph(meta_text, small_italic))
+                story.append(Spacer(1, 0.08 * inch))
+
+            # User message - simple paragraph with styling
+            story.append(Paragraph('<b>👤 User</b>', body_style))
+            story.append(Paragraph(_escape_for_paragraph(conv.user_message), user_content_style))
+            story.append(Spacer(1, 0.12 * inch))
+
+            # Assistant response - simple paragraph with styling
+            story.append(Paragraph('<b>🤖 Assistant</b>', body_style))
+            story.append(Paragraph(_escape_for_paragraph(conv.assistant_response), assistant_content_style))
+
+            # Spacing between conversations
             if idx < len(conversations):
+                story.append(Spacer(1, 0.2 * inch))
                 story.append(PageBreak())
-        
-        doc.build(story)
+
+        # Build the PDF
+        doc.build(story, onFirstPage=_draw_page, onLaterPages=_draw_page)
+
         logger.info(f"✅ PDF exported: {filename}")
-        
-        # Return string path for Gradio compatibility
         return str(filename)
+
     
     def export(self, conversations: List[ConversationEntry], 
                format_type: str, include_metadata: bool = True) -> Tuple[str, Optional[str]]:
@@ -195,17 +346,17 @@ class ConversationExporter:
             if format_type == "json":
                 content = self.export_to_json(conversations, include_metadata)
                 filename = self._save_to_file(content, "json")
-                return content, str(filename)  # Convert to string
+                return content, str(filename)
             
             elif format_type == "markdown":
                 content = self.export_to_markdown(conversations, include_metadata)
                 filename = self._save_to_file(content, "md")
-                return content, str(filename)  # Convert to string
+                return content, str(filename)
             
             elif format_type == "txt":
                 content = self.export_to_txt(conversations, include_metadata)
                 filename = self._save_to_file(content, "txt")
-                return content, str(filename)  # Convert to string
+                return content, str(filename)
             
             elif format_type == "pdf":
                 filename = self.export_to_pdf(conversations, include_metadata)
@@ -247,7 +398,7 @@ class ConversationExporter:
             filename.write_text(content, encoding='utf-8')
             
             logger.info(f"✅ Backup created: {filename}")
-            return str(filename)  # Convert to string
+            return str(filename)
         
         except Exception as e:
             logger.error(f"❌ Backup failed: {e}")
