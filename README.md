@@ -1,103 +1,192 @@
+---
+title: Advanced AI Reasoning System Pro
+emoji: 🧠
+colorFrom: purple
+colorTo: blue
+sdk: gradio
+sdk_version: "5.0.0"
+app_file: main.py
+pinned: false
+license: mit
+short_description: Next-gen AI reasoning platform with multiple research methodologies
+tags:
+  - llm
+  - reasoning
+  - groq
+  - ai
+  - research
+---
+
 # 🧠 Advanced AI Reasoning System Pro
 
-A production-ready AI reasoning application built with Gradio and Groq API, featuring multiple research-backed reasoning methodologies, advanced caching, real-time analytics, and comprehensive export capabilities.
+<div align="center">
 
-## ✨ Features
+![Advanced AI Reasoning System Pro](https://img.shields.io/badge/Version-1.0.0-blue?style=for-the-badge)
+![Python](https://img.shields.io/badge/Python-3.9+-purple?style=for-the-badge)
+![Gradio](https://img.shields.io/badge/Gradio-Latest-orange?style=for-the-badge)
+![Groq](https://img.shields.io/badge/Groq-API-red?style=for-the-badge)
 
-### 🔬 Research-Backed Reasoning Modes
-- **Tree of Thoughts (ToT)** - Systematic exploration of multiple reasoning paths
-- **Chain of Thought (CoT)** - Step-by-step logical reasoning
-- **Self-Consistency** - Multiple solution paths with consensus
-- **Reflexion** - Self-critique and iterative improvement
-- **Multi-Agent Debate** - Multiple perspectives and synthesis
-- **Analogical Reasoning** - Problem-solving through analogies
+**Next-Generation AI Research Platform with Stunning Dark Theme UI**
+
+*Production-ready AI reasoning application featuring multiple research-backed methodologies, beautiful dark theme interface, advanced caching, real-time analytics, and comprehensive export capabilities.*
+
+[🚀 Live Demo](#quick-start) • [📚 Documentation](#documentation) • [🎨 UI Features](#ui-features) • [🔧 Installation](#installation)
+
+</div>
+
+---
+
+## ✨ Screenshots
+
+<div align="center">
+
+### 🌟 Modern Dark Theme Interface
+![Header Section](./screenshots/header-section.png)
+
+*Professional branding with animated logo, clear typography, and interactive feature badges*
+
+### 🎯 Reasoning Workspace
+![Reasoning Interface](./screenshots/reasoning-workspace.png)
+
+*Clean, distraction-free workspace with collapsible sidebar and live metrics*
+
+### 📊 Analytics Dashboard
+![Analytics Dashboard](./screenshots/analytics-dashboard.png)
+
+*Real-time performance insights with beautiful visual indicators*
+
+</div>
+
+## 🎨 Modern Dark Theme UI
+
+Dive into a **stunning, professionally designed interface** that sets new standards for AI applications.
+
+### **🌟 Visual Excellence**
+- **Perfect Typography**: Space Grotesk for headlines, Inter for body text, JetBrains Mono for code
+- **High-Contrast Dark Theme**: Crisp white text on carefully selected dark backgrounds for optimal readability
+- **Font Smoothing**: Anti-aliased fonts with optimized rendering for crystal-clear text display
+- **Professional Branding**: Animated logo, gradient accents, and polished visual elements
+
+### **⚡ Interactive Animations**
+- **Smooth Transitions**: Cubic-bezier transitions for all interactive elements
+- **Status Indicators**: Pulsing animations for live system status
+- **Hover Effects**: Elegant lift and glow effects on buttons and cards
+- **Loading States**: Beautiful spinners and progress indicators
+
+### **📱 Responsive Design**
+- **Mobile-Optimized**: Centered layouts and touch-friendly interactions
+- **Breakpoint-Specific**: Tailored designs for tablets, phones, and desktops
+- **Flexible Components**: Adaptive feature badges and navigation elements
+
+### **🎯 User Experience Enhancements**
+- **Clear Visual Hierarchy**: Intuitively organized information with proper spacing
+- **Interactive Badges**: Hover effects on feature tags with smooth animations
+- **Modern Card Designs**: Black cards with subtle borders and soft shadows
+- **Accessibility First**: Focus indicators, high contrast ratios, reduced motion support
+
+---
+
+## ✨ Research Features
+
+### 🔬 Advanced Reasoning Modes
+- **🌳 Tree of Thoughts (ToT)** - Systematic exploration of multiple reasoning paths (*Yao et al., 2023*)
+- **🔗 Chain of Thought (CoT)** - Step-by-step logical reasoning (*Wei et al., 2022*)
+- **🔍 Self-Consistency** - Multiple solution paths with consensus validation
+- **🪞 Reflexion** - Self-critique and iterative improvement cycles
+- **👥 Multi-Agent Debate** - Multiple AI perspectives with synthesis
+- **🔄 Analogical Reasoning** - Problem-solving through structured analogies
 
 ### ⚡ Performance Features
-- **Response Caching** - LRU cache with TTL for faster responses
-- **Rate Limiting** - Token bucket algorithm to prevent API abuse
-- **Streaming Responses** - Real-time response generation
-- **Multi-threading** - Concurrent request handling
+- **Smart Caching**: LRU cache with TTL for accelerated responses
+- **Rate Limiting**: Token bucket algorithm preventing API overload
+- **Streaming**: Real-time response generation
+- **Multi-threading**: Concurrent request processing
 
 ### 📊 Analytics & Monitoring
-- **Real-time Metrics** - Live performance tracking
-- **Conversation Analytics** - Usage patterns and insights
-- **Cache Statistics** - Hit rates and performance metrics
-- **Session Tracking** - Unique session identification
+- **Live Metrics**: Real-time performance visualization
+- **Conversation Analytics**: Usage patterns and insights
+- **Cache Statistics**: Hit/miss ratios and efficiency
+- **Session Tracking**: Individual session identification
 
 ### 📤 Export Capabilities
-- **Multiple Formats** - JSON, Markdown, TXT, PDF
-- **Metadata Support** - Timestamps, models, performance data
-- **Automatic Backups** - Periodic conversation backups
-- **Search Functionality** - Keyword-based conversation search
+- **Multi-Format**: JSON, Markdown, Plain Text, PDF
+- **Rich Metadata**: Timestamps, models, and performance metrics
+- **Auto Backups**: Scheduled conversation preservation
+- **Smart Search**: Keyword-based historical retrieval
 
-### 🎨 User Interface
-- **Collapsible Sidebar** - Clean, distraction-free workspace
-- **Multiple Tabs** - Reasoning, Export, Analytics, Settings
-- **Live Metrics Display** - Real-time performance indicators
-- **Responsive Design** - Mobile-friendly interface
+---
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Python 3.9+
-- Groq API Key ([Get one here](https://console.groq.com))
+- **Python 3.9+**
+- **Groq API Key** ([Get one here](https://console.groq.com))
 
 ### Installation
 
-1. **Clone the repository**
-1. **Clone the repository**
+```bash
+# 1. Clone the repository
 git clone <repository-url>
 cd reasoning-system-pro
 
-text
-
-2. **Create virtual environment**
+# 2. Create virtual environment
 python -m venv venv
-source venv/bin/activate # On Windows: venv\Scripts\activate
+source venv/bin/activate  # Windows: venv\Scripts\activate
 
-text
-
-3. **Install dependencies**
+# 3. Install dependencies
 pip install -r requirements.txt
 
-text
-
-4. **Configure environment**
+# 4. Configure environment
 cp .env.example .env
+# Edit .env and add your GROQ_API_KEY
 
-Edit .env and add your GROQ_API_KEY
-text
-
-5. **Run the application**
+# 5. Run the application
 python main.py
 
-text
+# 6. Open in browser
+# http://localhost:7860
+```
 
-6. **Open in browser**
-http://localhost:7860
+---
 
-text
+## 🔄 Latest Updates
+
+### **v1.0.0 - Complete UI Redesign**
+- ✨ **Stunning Dark Theme**: Professional dark interface with optimal contrast
+- 🎨 **Enhanced Typography**: Space Grotesk + Inter fonts for modern aesthetics
+- ⚡ **Smooth Animations**: Subtle transitions and interactive elements
+- 🎯 **Improved UX**: Better visual hierarchy and navigation
+- 📱 **Responsive Design**: Optimized for all device sizes
+- 🎪 **Interactive Features**: Hover effects, animations, and feedback
+
+### Key Improvements:
+- **Visual Clarity**: Crystal-clear text rendering with anti-aliasing
+- **Brand Enhancement**: Animated logo and refined branding elements
+- **Performance**: Optimized CSS and smooth interactions
+- **Accessibility**: High contrast ratios and focus indicators
+
+---
 
 ## 📁 Project Structure
 
+```
 reasoning-system-pro/
 ├── src/
-│ ├── api/ # API client management
-│ ├── core/ # Core business logic
-│ ├── models/ # Data models
-│ ├── services/ # Business services
-│ ├── ui/ # Gradio interface
-│ ├── utils/ # Utilities
-│ └── config/ # Configuration
-├── tests/ # Test suite
-├── exports/ # Generated exports
-├── backups/ # Conversation backups
-├── logs/ # Application logs
-├── main.py # Entry point
-├── requirements.txt # Dependencies
-└── .env # Environment config
-
-text
+│   ├── api/              # API client management
+│   ├── core/             # Core business logic
+│   ├── models/           # Data models
+│   ├── services/         # Business services
+│   ├── ui/               # Gradio interface
+│   ├── utils/            # Utilities
+│   └── config/           # Configuration
+├── tests/                # Test suite
+├── exports/              # Generated exports
+├── backups/              # Conversation backups
+├── logs/                 # Application logs
+├── main.py               # Entry point
+├── requirements.txt      # Dependencies
+└── .env                  # Environment config
+```
 
 ## 🔧 Configuration
 
@@ -105,18 +194,18 @@ text
 
 Key configuration options in `.env`:
 
-API
+```env
+# API
 GROQ_API_KEY=your_key_here
 
-Performance
+# Performance
 CACHE_SIZE=100
 RATE_LIMIT_REQUESTS=50
 
-Features
+# Features
 ENABLE_PDF_EXPORT=true
 ENABLE_CACHE=true
-
-text
+```
 
 ### Advanced Configuration
 
@@ -130,10 +219,10 @@ Edit `src/config/settings.py` for fine-tuned control over:
 ## 📖 Usage Examples
 
 ### Basic Query
+```
 Simply type your question in the chat interface
 "Explain quantum entanglement using the Tree of Thoughts method"
-
-text
+```
 
 ### With Self-Critique
 Enable "Self-Critique" checkbox for automatic validation and refinement.
@@ -149,16 +238,16 @@ Select from pre-built templates:
 
 ## 🧪 Testing
 
-Run all tests
+```bash
+# Run all tests
 pytest
 
-With coverage
+# With coverage
 pytest --cov=src --cov-report=html
 
-Specific test file
+# Specific test file
 pytest tests/test_reasoner.py
-
-text
+```
 
 ## 📊 Available Models
 
@@ -178,31 +267,31 @@ And many more! See `src/config/constants.py` for the full list.
 ## 🛠️ Development
 
 ### Code Style
-Format code
+```bash
+# Format code
 black src/
 
-Check linting
+# Check linting
 flake8 src/
 
-Type checking
+# Type checking
 mypy src/
-
-text
+```
 
 ### Adding New Reasoning Modes
 
 1. Add to `src/config/constants.py`:
+```python
 class ReasoningMode(Enum):
-YOUR_MODE = "Your Mode Name"
-
-text
+    YOUR_MODE = "Your Mode Name"
+```
 
 2. Add system prompt in `src/core/prompt_engine.py`:
+```python
 SYSTEM_PROMPTS = {
-ReasoningMode.YOUR_MODE: "Your prompt here..."
+    ReasoningMode.YOUR_MODE: "Your prompt here..."
 }
-
-text
+```
 
 ## 📝 API Documentation
 
@@ -211,20 +300,20 @@ text
 #### AdvancedReasoner
 Main reasoning engine with streaming support.
 
+```python
 reasoner = AdvancedReasoner()
 for response in reasoner.generate_response(query, ...):
-print(response)
-
-text
+    print(response)
+```
 
 #### ResponseCache
 Thread-safe LRU cache with TTL.
 
+```python
 cache = ResponseCache(maxsize=100, ttl=3600)
 cache.set(key, value)
 result = cache.get(key)
-
-text
+```
 
 ## 🐛 Troubleshooting
 
