@@ -23,12 +23,6 @@ def create_ui() -> gr.Blocks:
     handlers = EventHandlers(reasoner)
     
     with gr.Blocks(
-        theme=gr.themes.Soft(
-            primary_hue=AppConfig.THEME_PRIMARY,
-            secondary_hue=AppConfig.THEME_SECONDARY,
-            font=gr.themes.GoogleFont("Inter")
-        ),
-        css=SIDEBAR_CSS,
         title="Advanced AI Reasoning System Pro"
     ) as demo:
         
@@ -47,13 +41,10 @@ def create_ui() -> gr.Blocks:
                         chatbot = gr.Chatbot(
                             label="💬 Reasoning Workspace",
                             height=750,
-                            show_copy_button=True,
-                            type="messages",
                             avatar_images=(
                                 "https://api.dicebear.com/7.x/avataaars/svg?seed=User",
                                 "https://api.dicebear.com/7.x/bottts/svg?seed=AI"
-                            ),
-                            bubble_full_width=False
+                            )
                         )
                         
                         msg = gr.Textbox(

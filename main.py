@@ -30,14 +30,20 @@ def main():
         
         # Create and launch UI
         demo = create_ui()
+        from src.ui.styles import SIDEBAR_CSS
         demo.launch(
             share=False,
-            server_name="0.0.0.0",
+            server_name="127.0.0.1",
             server_port=7860,
             show_error=True,
-            show_api=False,
             favicon_path=None,
-            max_threads=AppConfig.MAX_WORKERS
+            max_threads=AppConfig.MAX_WORKERS,
+            theme=__import__("gradio").themes.Soft(
+                primary_hue=AppConfig.THEME_PRIMARY,
+                secondary_hue=AppConfig.THEME_SECONDARY,
+                font=__import__("gradio").themes.GoogleFont("Inter")
+            ),
+            css=SIDEBAR_CSS
         )
         
     except KeyboardInterrupt:
