@@ -22,16 +22,8 @@ def create_ui() -> gr.Blocks:
     components = UIComponents()
     handlers = EventHandlers(reasoner)
     
-    theme = gr.themes.Soft(
-        primary_hue="purple",
-        secondary_hue="blue",
-        font=gr.themes.GoogleFont("Inter")
-    )
-
     with gr.Blocks(
-        title="Advanced AI Reasoning System Pro",
-        theme=theme,
-        css=SIDEBAR_CSS
+        title="Advanced AI Reasoning System Pro"
     ) as demo:
         
         # Header
