@@ -5,30 +5,34 @@ CSS styles for the Gradio interface
 CUSTOM_CSS = """
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
 :root {
-    --bg-primary: #0a0c0f;
-    --bg-secondary: #161b22;
-    --bg-tertiary: #21262d;
-    --bg-card: #161b22;
-    --bg-accent: #1f2426;
-    --text-primary: #ffffff;
-    --text-secondary: #f0f6fc;
-    --text-tertiary: #c9d1d9;
-    --text-muted: #8b949e;
-    --text-accent: #58a6ff;
-    --accent-primary: #8b5cf6;
-    --accent-secondary: #6366f1;
-    --accent-gradient: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
-    --success: #10b981;
-    --warning: #f59e0b;
-    --error: #ef4444;
-    --border-color: #cbd5e1;
-    --border-light: #e2e8f0;
-    --shadow-dark: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    --shadow-medium: 0 2px 4px rgba(0, 0, 0, 0.08);
-    --shadow-light: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --bg-primary: #0b0d12;
+    --bg-secondary: #131720;
+    --bg-tertiary: #1a1f2e;
+    --bg-card: #151a27;
+    --bg-accent: #1c2235;
+    --text-primary: #f0f2f5;
+    --text-secondary: #d1d5db;
+    --text-tertiary: #9ca3af;
+    --text-muted: #6b7280;
+    --text-accent: #67e8f9;
+    --accent-primary: #a78bfa;
+    --accent-secondary: #818cf8;
+    --accent-tertiary: #22d3ee;
+    --accent-gradient: linear-gradient(135deg, #a78bfa 0%, #818cf8 50%, #22d3ee 100%);
+    --accent-gradient-hover: linear-gradient(135deg, #c4b5fd 0%, #a5b4fc 50%, #67e8f9 100%);
+    --success: #34d399;
+    --warning: #fbbf24;
+    --error: #f87171;
+    --border-color: rgba(148, 163, 184, 0.15);
+    --border-light: rgba(148, 163, 184, 0.08);
+    --border-accent: rgba(167, 139, 250, 0.3);
+    --shadow-dark: 0 4px 24px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(148, 163, 184, 0.05);
+    --shadow-medium: 0 2px 12px rgba(0, 0, 0, 0.2);
+    --shadow-light: 0 1px 4px rgba(0, 0, 0, 0.1);
+    --shadow-glow: 0 0 20px rgba(167, 139, 250, 0.15);
     --border-radius: 12px;
     --border-radius-lg: 16px;
-    --transition: all 0.3s ease;
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* ==================== GLOBAL STYLES ==================== */
@@ -208,7 +212,7 @@ em, i {
 /* ==================== ENHANCED HEADER ==================== */
 
 .research-header {
-    background: var(--bg-card) !important;
+    background: linear-gradient(180deg, var(--bg-card) 0%, var(--bg-secondary) 100%) !important;
     border: 1px solid var(--border-color) !important;
     padding: 2.5rem 2rem !important;
     border-radius: var(--border-radius-lg) !important;
@@ -377,14 +381,14 @@ em, i {
 }
 
 .feature-badge:hover {
-    background: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(99, 102, 241, 0.15) 100%) !important;
-    border-color: rgba(139, 92, 246, 0.4) !important;
-    color: var(--accent-secondary) !important;
+    background: linear-gradient(135deg, rgba(167, 139, 250, 0.15) 0%, rgba(34, 211, 238, 0.1) 100%) !important;
+    border-color: rgba(167, 139, 250, 0.4) !important;
+    color: var(--accent-tertiary) !important;
     transform: translateY(-3px) !important;
     box-shadow:
-        0 10px 25px rgba(139, 92, 246, 0.2),
-        0 0 20px rgba(139, 92, 246, 0.1) !important;
-    text-shadow: 0 0 8px rgba(139, 92, 246, 0.3) !important;
+        0 10px 25px rgba(167, 139, 250, 0.2),
+        0 0 20px rgba(34, 211, 238, 0.1) !important;
+    text-shadow: 0 0 8px rgba(167, 139, 250, 0.3) !important;
 }
 
 .feature-badge:active {
@@ -433,7 +437,7 @@ em, i {
 .metrics-card:hover {
     border-color: var(--accent-primary) !important;
     transform: translateY(-2px) !important;
-    box-shadow: var(--shadow-dark) !important;
+    box-shadow: var(--shadow-glow), var(--shadow-dark) !important;
 }
 
 .metrics-card * {
@@ -652,24 +656,26 @@ em, i {
 /* ==================== BUTTON ENHANCEMENTS ==================== */
 
 .gr-button {
-    background: var(--accent-primary) !important;
+    background: var(--accent-gradient) !important;
     color: white !important;
     border: none !important;
     padding: 0.75rem 1.5rem !important;
-    border-radius: 8px !important;
-    font-weight: 500 !important;
+    border-radius: 10px !important;
+    font-weight: 600 !important;
     transition: var(--transition) !important;
     box-shadow: var(--shadow-medium) !important;
+    letter-spacing: 0.3px !important;
 }
 
 .gr-button:hover {
-    background: var(--accent-secondary) !important;
+    background: var(--accent-gradient-hover) !important;
     transform: translateY(-2px) !important;
-    box-shadow: var(--shadow-dark) !important;
+    box-shadow: var(--shadow-glow), var(--shadow-dark) !important;
 }
 
 .gr-button:active {
     transform: translateY(0) !important;
+    box-shadow: var(--shadow-medium) !important;
 }
 
 /* ==================== INPUT ENHANCEMENTS ==================== */
@@ -685,7 +691,7 @@ em, i {
 
 .gr-input:focus, .gr-textbox:focus, .gr-dropdown:focus {
     border-color: var(--accent-primary) !important;
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
+    box-shadow: 0 0 0 2px rgba(167, 139, 250, 0.2), var(--shadow-glow) !important;
     outline: none !important;
 }
 
@@ -738,7 +744,7 @@ em, i {
     background: var(--accent-gradient) !important;
     color: white !important;
     font-weight: 600 !important;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+    box-shadow: 0 2px 8px rgba(167, 139, 250, 0.3) !important;
 }
 
 .gr-tabs .tab-nav button.selected::after {
@@ -1032,7 +1038,7 @@ em, i {
         --bg-card: #111111;
         --text-primary: #ffffff;
         --text-secondary: #e0e0e0;
-        --border-color: #555555;
+        --border-color: rgba(85, 85, 85, 0.5);
     }
     
     .badge {
@@ -1085,18 +1091,21 @@ textarea:focus-visible {
 .gr-chatbot .message {
     border-radius: var(--border-radius) !important;
     box-shadow: var(--shadow-light) !important;
-    border: 1px solid var(--border-light) !important;
+    border: 1px solid var(--border-color) !important;
     margin: 0.75rem 0 !important;
+    padding: 1rem 1.25rem !important;
 }
 
 .gr-chatbot .message.user {
-    background: linear-gradient(135deg, rgba(139, 92, 246, 0.03) 0%, rgba(99, 102, 241, 0.03) 100%) !important;
-    border-color: rgba(139, 92, 246, 0.15) !important;
+    background: linear-gradient(135deg, rgba(167, 139, 250, 0.08) 0%, rgba(129, 140, 248, 0.05) 100%) !important;
+    border-color: rgba(167, 139, 250, 0.2) !important;
+    border-left: 3px solid var(--accent-primary) !important;
 }
 
 .gr-chatbot .message.bot {
-    background: var(--bg-card) !important;
+    background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-secondary) 100%) !important;
     border-color: var(--border-color) !important;
+    border-left: 3px solid var(--accent-tertiary) !important;
 }
 
 /* Enhanced spacing and typography */
