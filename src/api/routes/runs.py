@@ -2,7 +2,7 @@ import asyncio
 import json
 from typing import Optional
 from fastapi import APIRouter, Request, Query
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from src.api.schemas import StartRunRequest
 from src.storage import dao
 from src.core.reasoner import AsyncReasoner
@@ -101,3 +101,49 @@ async def list_runs(request: Request,
         d["knobs"] = json.loads(d["knobs"]) if d["knobs"] else {}
         out.append(d)
     return {"runs": out}
+
+
+def _sse_format(*, seq: int, event_type: str, data: dict) -> str:
+    return f"id: {seq}\nevent: {event_type}\ndata: {json.dumps(data)}\n\n"
+
+
+@router.get("/runs/{run_id}/events")
+async def stream_events(run_id: str, request: Request):
+    db = request.app.state.db
+    bus = request.app.state.bus
+    if not dao.get_run(db, run_id):
+        return _err("RUN_NOT_FOUND", f"no run {run_id}", status=404)
+
+    last_event_id = request.headers.get("Last-Event-ID")
+    after_seq = int(last_event_id) if last_event_id and last_event_id.isdigit() else 0
+
+    async def gen():
+        # 1) Replay persisted events past last_event_id
+        for evt in bus.replay(run_id, after_seq=after_seq):
+            yield _sse_format(seq=evt["seq"], event_type=evt["type"], data=evt)
+
+        # 2) If run already terminal, end stream
+        row = dao.get_run(db, run_id)
+        if row and row["status"] != "running":
+            return
+
+        # 3) Otherwise subscribe and stream until terminal event
+        queue = bus.subscribe(run_id)
+        try:
+            while True:
+                try:
+                    evt = await asyncio.wait_for(queue.get(), timeout=15.0)
+                except asyncio.TimeoutError:
+                    yield ": ping\n\n"
+                    continue
+                seq = evt.__dict__.get("seq", 0)
+                yield _sse_format(seq=seq, event_type=evt.type, data={
+                    "event_id": evt.event_id, "seq": seq, "ts": evt.ts,
+                    "type": evt.type, "payload": evt.payload, "run_id": run_id,
+                })
+                if evt.type in {"RunCompleted", "RunFailed"}:
+                    return
+        finally:
+            bus.unsubscribe(run_id, queue)
+
+    return StreamingResponse(gen(), media_type="text/event-stream")
