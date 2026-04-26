@@ -65,6 +65,7 @@ class AppConfig:
 
     # Spec 1 — backend persistence + concurrency
     DB_PATH: ClassVar[str] = os.getenv('DB_PATH', './data/reasoning.db')
+    GROQ_API_KEY: ClassVar[str] = os.getenv('GROQ_API_KEY', '')
     LLM_CONCURRENCY: ClassVar[int] = int(os.getenv('LLM_CONCURRENCY', '8'))
     DEFAULT_TOKEN_BUDGET: ClassVar[int] = int(os.getenv('DEFAULT_TOKEN_BUDGET', '50000'))
     DEFAULT_EVALUATOR_MODEL: ClassVar[str] = os.getenv('DEFAULT_EVALUATOR_MODEL', 'llama-3.1-8b-instant')
