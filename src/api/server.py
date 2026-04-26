@@ -7,7 +7,7 @@ from src.storage.db import open_db, run_migrations
 from src.core.event_bus import EventBus
 from src.api.groq_client import AsyncGroqClient
 from src.config.settings import AppConfig
-from src.api.routes import meta, conversations
+from src.api.routes import meta, conversations, runs
 
 
 def build_app(*, api_key: str | None = None) -> FastAPI:
@@ -27,6 +27,7 @@ def build_app(*, api_key: str | None = None) -> FastAPI:
     app = FastAPI(title="Reasoning API", lifespan=lifespan)
     app.include_router(meta.router)
     app.include_router(conversations.router)
+    app.include_router(runs.router)
     return app
 
 
