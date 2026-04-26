@@ -28,11 +28,11 @@ def create_ui() -> gr.Blocks:
     )
 
     with gr.Blocks(
-        title="Advanced AI Reasoning System Pro"
+        title="Advanced AI Reasoning System Pro",
+        theme=theme,
+        css=SIDEBAR_CSS,
     ) as demo:
-        demo._theme = theme
-        demo._css = SIDEBAR_CSS
-        
+
         # Header
         gr.HTML(components.get_header_html())
         
@@ -48,6 +48,7 @@ def create_ui() -> gr.Blocks:
                         chatbot = gr.Chatbot(
                             label="💬 Reasoning Workspace",
                             height=750,
+                            type="messages",
                             avatar_images=(
                                 "https://api.dicebear.com/7.x/avataaars/svg?seed=User",
                                 "https://api.dicebear.com/7.x/bottts/svg?seed=AI"

@@ -60,27 +60,45 @@ def _mode_to_strategy(mode) -> str:
 
 
 def _render_event_inline(evt: dict) -> str:
-    """Return a short markdown snippet for intermediate streaming events."""
+    """Return a markdown snippet for intermediate streaming events. Full text
+    is shown (not truncated) so users see the complete reasoning trace."""
     t = evt.get("type", "")
     payload = evt.get("payload", {})
     if t == "ThoughtGenerated":
-        return f"\n\n*💭 {payload.get('text', '')[:200]}*"
+        return f"\n\n> 💭 **Thought (depth {payload.get('depth', '?')}):** {payload.get('text', '')}"
     if t == "BranchScored":
-        return f"\n\n*⭐ {payload.get('score', 0):.2f}: {payload.get('rationale', '')}*"
+        return f"\n\n> ⭐ **Score {payload.get('score', 0):.2f}** — {payload.get('rationale', '')}"
     if t == "BeamPruned":
-        return f"\n\n*✂️ kept {len(payload.get('kept', []))} branches*"
+        return f"\n\n> ✂️ Pruned to top {len(payload.get('kept', []))} branches at depth {payload.get('depth', '?')}"
+    if t == "SampleGenerated":
+        return f"\n\n> 🎲 **Sample #{payload.get('sample_id', '?')}:**\n> \n> {payload.get('text', '')}"
+    if t == "AnswerExtracted":
+        return f"\n\n> 📝 Sample #{payload.get('sample_id', '?')} → `{payload.get('canonical', '')}`"
     if t == "AgentSpoke":
         return (
-            f"\n\n**{payload.get('agent', '?')}** "
-            f"(round {payload.get('round', '?')}): "
-            f"{payload.get('text', '')[:300]}"
+            f"\n\n---\n\n### 🗣️ {payload.get('agent', '?')} — Round {payload.get('round', '?')}\n\n"
+            f"{payload.get('text', '')}"
         )
     if t == "AttemptGenerated":
-        return f"\n\n*Attempt #{payload.get('iter', 0)}: {payload.get('text', '')[:200]}*"
+        return f"\n\n---\n\n### 🔄 Attempt #{payload.get('iter', 0)}\n\n{payload.get('text', '')}"
     if t == "AttemptJudged":
-        return f"\n\n*judge: {payload.get('score', 0):.2f}*"
+        issues = payload.get('issues') or []
+        issues_md = "\n".join(f"  - {i}" for i in issues) if issues else "  - (none)"
+        return f"\n\n> 🧑‍⚖️ **Judge score {payload.get('score', 0):.2f}** — issues:\n{issues_md}"
+    if t == "CritiqueGenerated":
+        return f"\n\n> 🔍 **Critique #{payload.get('iter', 0)}:** {payload.get('text', '')}"
+    if t == "TerminatedEarly":
+        return f"\n\n> 🏁 Stopped early — {payload.get('reason', '?')} (score {payload.get('score', 0):.2f})"
     if t == "VoteTallied":
-        return f"\n\n*🗳 winner: {payload.get('winner')} ({payload.get('share', 0):.0%})*"
+        tally = payload.get('tally', {})
+        tally_md = ", ".join(f"`{k}`: {v}" for k, v in tally.items())
+        return f"\n\n> 🗳 **Vote:** winner = `{payload.get('winner')}` ({payload.get('share', 0):.0%}). Tally: {tally_md}"
+    if t == "JudgeVerdict":
+        return (
+            f"\n\n---\n\n### 🧑‍⚖️ Judge Verdict\n\n"
+            f"**Winner:** {payload.get('winner', '?')} (confidence {payload.get('confidence', 0):.0%})\n\n"
+            f"**Rationale:** {payload.get('rationale', '')}"
+        )
     return ""
 
 
@@ -161,12 +179,21 @@ class EventHandlers:
             yield history, self.components.get_metrics_html(self.reasoner)
             return
 
+        # Track the prose-answer separately so the trace events stay above it
+        # and the legacy bridge gets the clean final text.
+        trace_so_far = ""
+        final_text = ""
         try:
             async for evt in client.stream_events(run_id):
                 evt_type = evt.get("type", "")
 
                 if evt_type == "FinalAnswer":
-                    history[-1]["content"] = evt.get("payload", {}).get("text", "")
+                    final_text = evt.get("payload", {}).get("text", "") or ""
+                    history[-1]["content"] = (
+                        trace_so_far
+                        + ("\n\n---\n\n### ✅ Final Answer\n\n" if trace_so_far else "")
+                        + final_text
+                    )
                     yield history, self.components.get_metrics_html(self.reasoner)
 
                 elif evt_type == "RunFailed":
@@ -176,14 +203,28 @@ class EventHandlers:
                     return
 
                 elif evt_type == "RunCompleted":
+                    payload = evt.get("payload", {})
+                    self._bridge_to_legacy(
+                        user_message=message, assistant_response=final_text or
+                                     payload.get("final_answer", ""),
+                        model=model_name, mode_value=getattr(mode_enum, "value",
+                                                              str(mode_enum)),
+                        temperature=temp, max_tokens=tokens,
+                        tokens_used=int(payload.get("tokens_used", 0)),
+                        elapsed_s=float(payload.get("elapsed_s", 0.0)),
+                        confidence=float(payload.get("confidence", 1.0)) * 100.0,
+                        critique_enabled=bool(critique),
+                    )
+                    yield history, self.components.get_metrics_html(self.reasoner)
                     return
 
                 else:
                     # ThoughtGenerated, AgentSpoke, AttemptGenerated,
-                    # BranchScored, BeamPruned, VoteTallied, AttemptJudged
+                    # BranchScored, BeamPruned, VoteTallied, AttemptJudged, etc.
                     snippet = _render_event_inline(evt)
                     if snippet:
-                        history[-1]["content"] += snippet
+                        trace_so_far += snippet
+                        history[-1]["content"] = trace_so_far
                         yield history, self.components.get_metrics_html(self.reasoner)
 
         except Exception as e:
@@ -193,6 +234,37 @@ class EventHandlers:
             history[-1]["content"] += f"\n\n{error_msg}"
             logger.error(f"stream_events error: {e}", exc_info=True)
             yield history, self.components.get_metrics_html(self.reasoner)
+
+    def _bridge_to_legacy(self, *, user_message: str, assistant_response: str,
+                          model: str, mode_value: str, temperature: float,
+                          max_tokens: int, tokens_used: int, elapsed_s: float,
+                          confidence: float, critique_enabled: bool) -> None:
+        """Mirror a completed FastAPI run into the legacy AdvancedReasoner's
+        in-memory store so exports/search/analytics/PDF/history continue to
+        work during the Spec 1 → 1.5 transition."""
+        try:
+            from src.models.entry import ConversationEntry
+            entry = ConversationEntry(
+                user_message=user_message,
+                assistant_response=assistant_response,
+                model=model,
+                reasoning_mode=mode_value,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                tokens_used=tokens_used,
+                inference_time=elapsed_s,
+                reasoning_depth=1,
+                confidence_score=confidence,
+                critique_enabled=critique_enabled,
+                cache_hit=False,
+            )
+            self.reasoner.conversation_manager.add_conversation(entry)
+            self.reasoner.metrics.update(
+                tokens=tokens_used, time_taken=elapsed_s, depth=1,
+                corrections=1 if critique_enabled else 0, confidence=confidence,
+            )
+        except Exception as e:
+            logger.warning(f"legacy bridge skipped: {e}")
 
     # ------------------------------------------------------------------
     # All other handlers — continue to use self.reasoner (legacy path)

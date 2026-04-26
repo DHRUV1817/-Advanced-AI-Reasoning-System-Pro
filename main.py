@@ -64,8 +64,6 @@ def main():
             server_port=7860,
             show_error=True,
             max_threads=AppConfig.MAX_WORKERS,
-            theme=getattr(demo, "_theme", None),
-            css=getattr(demo, "_css", None),
         )
 
     except KeyboardInterrupt:

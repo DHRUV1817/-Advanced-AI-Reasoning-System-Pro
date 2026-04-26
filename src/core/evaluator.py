@@ -98,10 +98,17 @@ class Evaluator:
     async def judge_debate(self, *, problem: str,
                            transcripts: dict[str, list[str]]) -> DebateVerdict:
         system = (
-            "Judge a multi-agent debate. Output JSON: "
+            "Judge a multi-agent debate and write the final answer the user "
+            "will see. Output JSON: "
             '{"winner": "<persona name|consensus>", "confidence": <0..1>, '
-            '"rationale": "<paragraph>", "synthesis": "<final answer>"}. '
-            "synthesis is what the user sees — write it well."
+            '"rationale": "<one paragraph explaining the winner>", '
+            '"synthesis": "<the complete final answer>"}. '
+            "The `synthesis` is what the user reads as the answer — it must "
+            "be COMPREHENSIVE and self-contained: include the strongest "
+            "points from every agent's contributions, integrate resolved "
+            "disagreements, and present a thorough, well-structured response "
+            "(multiple paragraphs, concrete details from the debate). Do NOT "
+            "just summarise — write the full answer."
         )
         formatted = "\n\n".join(
             f"=== {p} ===\n" + "\n---\n".join(msgs)
