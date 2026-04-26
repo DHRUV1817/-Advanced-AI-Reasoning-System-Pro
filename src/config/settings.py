@@ -62,6 +62,16 @@ class AppConfig:
     # Performance
     MAX_WORKERS: ClassVar[int] = int(os.getenv('MAX_WORKERS', '3'))
     ENABLE_PARALLEL_PROCESSING: ClassVar[bool] = True
+
+    # Spec 1 — backend persistence + concurrency
+    DB_PATH: ClassVar[str] = os.getenv('DB_PATH', './data/reasoning.db')
+    LLM_CONCURRENCY: ClassVar[int] = int(os.getenv('LLM_CONCURRENCY', '8'))
+    DEFAULT_TOKEN_BUDGET: ClassVar[int] = int(os.getenv('DEFAULT_TOKEN_BUDGET', '50000'))
+    DEFAULT_EVALUATOR_MODEL: ClassVar[str] = os.getenv('DEFAULT_EVALUATOR_MODEL', 'llama-3.1-8b-instant')
+    LLM_CALL_TIMEOUT_S: ClassVar[int] = int(os.getenv('LLM_CALL_TIMEOUT_S', '60'))
+    RUN_TIMEOUT_S: ClassVar[int] = int(os.getenv('RUN_TIMEOUT_S', '600'))
+    API_HOST: ClassVar[str] = os.getenv('API_HOST', '127.0.0.1')
+    API_PORT: ClassVar[int] = int(os.getenv('API_PORT', '8000'))
     
     # Security
     MAX_INPUT_LENGTH: ClassVar[int] = 10000
