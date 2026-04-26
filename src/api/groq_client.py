@@ -88,3 +88,37 @@ class GroqClientManager:
             self._client = None
             self._initialized = False
             logger.info("🔄 Groq client reset")
+
+
+import asyncio
+from groq import AsyncGroq
+
+
+class AsyncGroqClient:
+    """Async Groq wrapper with global concurrency cap + JSON-mode helper.
+
+    Distinct from GroqClientManager (sync, used by legacy Reasoner path).
+    Spec 1 backend uses this exclusively.
+    """
+    def __init__(self, *, api_key: str, concurrency: int = 8,
+                 timeout_s: int = 60):
+        self._sdk = AsyncGroq(api_key=api_key, timeout=timeout_s)
+        self.sem = asyncio.Semaphore(concurrency)
+
+    async def acall(self, *, messages: list[dict], model: str,
+                    temperature: float = 0.7, max_tokens: int = 4000,
+                    json_mode: bool = False):
+        kwargs = dict(messages=messages, model=model,
+                      temperature=temperature, max_tokens=max_tokens)
+        if json_mode:
+            kwargs["response_format"] = {"type": "json_object"}
+        async with self.sem:
+            return await self._sdk.chat.completions.create(**kwargs)
+
+
+def make_async_client() -> AsyncGroqClient:
+    return AsyncGroqClient(
+        api_key=AppConfig.GROQ_API_KEY,
+        concurrency=AppConfig.LLM_CONCURRENCY,
+        timeout_s=AppConfig.LLM_CALL_TIMEOUT_S,
+    )
