@@ -225,3 +225,79 @@ class AdvancedReasoner:
             self.mode_usage,
             self.cache.get_stats()
         )
+
+
+# ============================================================================
+# SPEC 1 ORCHESTRATOR (Phase 6)
+# ============================================================================
+# AsyncReasoner replaces AdvancedReasoner.generate_response for the new
+# HTTP API path. Drives strategies, persists lifecycle, emits events via bus.
+# ============================================================================
+
+from src.core.event_bus import EventBus
+from src.core.events import RunStarted, RunCompleted, RunFailed, StrategyResult
+from src.core.evaluator import Evaluator
+from src.core.strategies import STRATEGY_REGISTRY
+from src.core.strategies.base import StrategyConfig
+from src.storage import dao
+
+
+class AsyncReasoner:
+    """Spec 1 orchestrator. Drives a strategy, persists lifecycle, fans out
+    events via the bus. Replaces AdvancedReasoner.generate_response over time.
+    """
+    def __init__(self, *, client, bus: EventBus, store):
+        self.client = client
+        self.bus = bus
+        self.store = store
+
+    async def run(self, *, run_id: str, problem: str, strategy_name: str,
+                  config: StrategyConfig) -> None:
+        if strategy_name not in STRATEGY_REGISTRY:
+            err = f"unknown strategy: {strategy_name}"
+            dao.fail_run(self.store, run_id, error=err)
+            await self.bus.publish(run_id, RunFailed(run_id=run_id, payload={"error": err}))
+            raise ValueError(err)
+
+        evaluator = None
+        if config.evaluator_model:
+            evaluator = Evaluator(self.client, model=config.evaluator_model)
+
+        strat_cls = STRATEGY_REGISTRY[strategy_name]
+        strat = strat_cls(client=self.client, evaluator=evaluator,
+                          config=config, run_id=run_id)
+
+        await self.bus.publish(run_id, RunStarted(run_id=run_id, payload={
+            "strategy": strategy_name, "model": config.reasoning_model,
+            "evaluator_model": config.evaluator_model, "knobs": config.knobs,
+        }))
+
+        result: StrategyResult | None = None
+        try:
+            async for item in strat.run(problem):
+                if isinstance(item, StrategyResult):
+                    result = item
+                else:
+                    await self.bus.publish(run_id, item)
+        except Exception as e:
+            dao.fail_run(self.store, run_id, error=str(e))
+            await self.bus.publish(run_id, RunFailed(run_id=run_id,
+                                                    payload={"error": str(e)}))
+            raise
+
+        if result is None:
+            err = f"strategy {strategy_name} produced no StrategyResult"
+            dao.fail_run(self.store, run_id, error=err)
+            await self.bus.publish(run_id, RunFailed(run_id=run_id, payload={"error": err}))
+            raise RuntimeError(err)
+
+        dao.complete_run(
+            self.store, run_id,
+            final_answer=result.final_answer, confidence=result.confidence,
+            tokens_used=result.tokens_used, elapsed_s=result.elapsed_s,
+        )
+        await self.bus.publish(run_id, RunCompleted(run_id=run_id, payload={
+            "final_answer": result.final_answer, "confidence": result.confidence,
+            "tokens_used": result.tokens_used, "elapsed_s": result.elapsed_s,
+            "trace_summary": result.trace_summary,
+        }))

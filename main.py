@@ -1,11 +1,29 @@
-"""
-Main application entry point
-"""
+"""Entry point. Default mode: launches FastAPI backend in-process and the
+Gradio UI on top of it. --no-backend skips the FastAPI process (use when
+running a separate uvicorn / Next.js dev server)."""
+import argparse
+import asyncio
+import threading
+import uvicorn
 from src.config.env import load_environment
 from src.config.settings import AppConfig
 from src.config.constants import ReasoningMode, ModelConfig
 from src.ui.app import create_ui
 from src.utils.logger import logger
+
+
+def _start_backend_in_thread():
+    """Run uvicorn in a background daemon thread so Gradio gets the main
+    thread (its launcher manages signal handling there)."""
+    config = uvicorn.Config(
+        "src.api.server:app",
+        host=AppConfig.API_HOST, port=AppConfig.API_PORT,
+        log_level="warning", access_log=False,
+    )
+    server = uvicorn.Server(config)
+    t = threading.Thread(target=lambda: asyncio.run(server.serve()), daemon=True)
+    t.start()
+    return server
 
 
 def main():
@@ -15,7 +33,7 @@ def main():
     try:
         # Load environment variables
         load_environment()
-        
+
         # Print startup information
         logger.info("="*60)
         logger.info("🚀 Starting Advanced AI Reasoning System Pro...")
@@ -27,25 +45,27 @@ def main():
         logger.info(f"⏱️  Rate Limit: {AppConfig.RATE_LIMIT_REQUESTS} req/{AppConfig.RATE_LIMIT_WINDOW}s")
         logger.info("🎛️ Features: Collapsible Sidebar, PDF Export, Real-time Analytics")
         logger.info("="*60)
-        
-        # Create and launch UI
+
+        # Parse CLI arguments
+        parser = argparse.ArgumentParser()
+        parser.add_argument("--no-backend", action="store_true",
+                            help="don't start FastAPI in-process (assume external uvicorn)")
+        args = parser.parse_args()
+
+        # Start FastAPI backend in background thread (unless disabled)
+        if not args.no_backend:
+            _start_backend_in_thread()
+
+        # Create and launch Gradio UI (holds main thread)
         demo = create_ui()
-        from src.ui.styles import SIDEBAR_CSS
         demo.launch(
             share=False,
             server_name="127.0.0.1",
             server_port=7860,
             show_error=True,
-            favicon_path=None,
             max_threads=AppConfig.MAX_WORKERS,
-            theme=__import__("gradio").themes.Soft(
-                primary_hue=AppConfig.THEME_PRIMARY,
-                secondary_hue=AppConfig.THEME_SECONDARY,
-                font=__import__("gradio").themes.GoogleFont("Inter")
-            ),
-            css=SIDEBAR_CSS
         )
-        
+
     except KeyboardInterrupt:
         logger.info("⏹️  Application stopped by user (Ctrl+C)")
     except Exception as e:
